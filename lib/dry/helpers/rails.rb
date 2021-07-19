@@ -11,7 +11,7 @@ module Dry
         Dir.each_child(path) do |filename|
           cur_file = path + "\\#{filename}"
           if (Dir.exist?(cur_file))
-            finded_files = readAllRubFiles(cur_file)
+            finded_files = createPathToRubyFiles(cur_file)
             finded_files.each { |findPath| paths.push(findPath) }
           end
           if (filename.end_with?(".rb"))
@@ -91,8 +91,7 @@ module Dry
             end
           end
           if (in_str_const) # Если до сих пор внутри строковой константы
-            code[i] = cutSubstrFromStrByIndexes(code[i],
-                                                start_of_str_const, cur_str_length)
+            code[i] = cutSubstrFromStrByIndexes(code[i], start_of_str_const, cur_str_length)
           end
           i += 1
         end
@@ -127,19 +126,18 @@ module Dry
         # Удаление всего ненужного(комментарии и строковые константы) из кода
         code_array = deleteCommentsAndStrConsts(code_array)
 
-        reg = Regexp.new(/^\s*[^#]?\s*def\s+([a-zA-Z]\w*[!?=]?)\s*([(]?)/)
+        reg = Regexp.new(/^\s*def\s+([a-zA-Z]\w*[!?=]?)\s*([(]?)/)
 
         # Объекты, хранящие инфу про функцию
         functions_info = []
         i = 0
-        while (i < code_array.length)
-          if (code_array[i].match?(reg))
-            find = code_array[i].match(reg)
+        code_array.each.with_index do |obj, index|
+          if(obj.match?(reg))
+            find = obj.match(reg)
             functions_info.append(
-              FunctionDefinition.new(find[1], file_path, i)
+              FunctionDefinition.new(find[1], file_path, index)
             )
           end
-          i += 1
         end
         functions_info
       end
