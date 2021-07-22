@@ -1,4 +1,4 @@
-require "dry/helpers/rails/version"
+require "./lib/dry/helpers/rails/version"
 
 module Dry
   module Helpers
