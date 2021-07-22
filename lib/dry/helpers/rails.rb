@@ -6,7 +6,7 @@ module Dry
       class Error < StandardError; end
       # Your code goes here...
       # Создание массива путей ко всем ruby файлам в определенной папке
-      def createPathToRubyFiles(path)
+      def Rails.createPathToRubyFiles(path)
         paths = []
         Dir.each_child(path) do |filename|
           cur_file = path + "\\#{filename}"
@@ -24,7 +24,7 @@ module Dry
       end
 
       # Заменяет подстроку в строке на пробелы (по индексам)
-      def deleteSubstrFromStrByIndexes(str, startOfStr, endOfStr)
+      def Rails.deleteSubstrFromStrByIndexes(str, startOfStr, endOfStr)
         copyOfStr = str.clone
         # Ошибка если неправильные границы
         if (startOfStr < 0 || endOfStr < startOfStr || endOfStr > str.length)
@@ -37,7 +37,7 @@ module Dry
       end
 
       # Удаляет из кода на Ruby все комментарии и строковые константы
-      def deleteCommentsAndStrConsts(code)
+      def Rails.deleteCommentsAndStrConsts(code)
         # нахожусь ли в строковой константе
         in_str_const = false
         # в какой строковой константе нахожусь
@@ -124,7 +124,7 @@ module Dry
       end
 
       # Поиск всех функций и создание массива объявлений функций для одного файла
-      def create_list_of_def_func(file_path)
+      def Rails.create_list_of_def_func(file_path)
         # Массив строк прочитанных из файла
         code_array = []
 
@@ -146,7 +146,7 @@ module Dry
             find = obj.match(reg)
             # инфа о найденной функции
             newDef = FunctionDefinition.new(find[1])
-            newPos = PositionInFile.new(file_path, index)
+            newPos = PositionInFile.new(file_path, index+1)
 
             # поиск была ли уже найдена функция с текущим именем
             matchEqual = -1
@@ -166,19 +166,15 @@ module Dry
         functions_info
       end
 
-      # Основная функция
-      # dir = Dir.pwd
-      def findEqualDefinitionsOfFunctionsInRubyFiles(dir)
-        # путь, до папки проекта в котором должная находиться папка helpers
-        current_path = dir.concat("\\helpers")
-
+      # поиск всех объявлений функций во всех руби файлах найденных в одной папке
+      def Rails.findAllDefinitionsOfFunctionsInFolder(dir_path)
         # если папки в helpers в проекте не существует
-        unless Dir.exist?(current_path)
+        unless Dir.exist?(dir_path)
           raise "Dir not exist"
         end
 
         # поиск всех ruby файлов
-        paths = createPathToRubyFiles(current_path)
+        paths = createPathToRubyFiles(dir_path)
 
         # Создание массива функций
         list_of_def = []
@@ -205,8 +201,17 @@ module Dry
             end
           end
         end
+        list_of_def
+      end
 
-        # Сравнение объектов функций по именам
+      # Основная функция
+      # для текущей задачи(dir = Dir.pwd)
+      def Rails.findEqualDefinitionsOfFunctionsInRubyFiles(dir)
+        # путь, до папки проекта в котором должная находиться папка helpers
+        current_path = dir.concat("\\helpers")
+
+        # создание массива, который хранит инфу о функциях, найденных в папке
+        list_of_def = findAllDefinitionsOfFunctionsInFolder(current_path)
 
         error_msgs = []
         list_of_def.each do |one_of_def|
@@ -226,7 +231,6 @@ number of string: #{pos.num_of_str}"
         error_msgs
       end
 
-      #puts findEqualDefinitionsOfFunctionsInRubyFiles(Dir.pwd)
     end
   end
 end
