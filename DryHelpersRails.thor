@@ -4,6 +4,6 @@ class DryHelpersRails < Thor
   desc "rails-dry-helpers", "call main func"
   def call
 
-    puts Dry::Helpers::Rails::findEqualDefinitionsOfFunctionsInRubyFiles
+    puts Dry::Helpers::Rails::findEqualDefinitionsOfFunctionsInRubyFiles(Dir.pwd)
   end
 end
