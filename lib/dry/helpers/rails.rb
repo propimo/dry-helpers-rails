@@ -228,7 +228,11 @@ number of string: #{pos.num_of_str}"
             error_msgs.append(mes)
           end
         end
-        error_msgs
+        if(error_msgs.empty?)
+          return nil
+        else
+          return error_msgs
+        end
       end
 
     end
