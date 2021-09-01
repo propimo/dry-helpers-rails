@@ -5,6 +5,9 @@ module Dry
     module Rails
       class Error < StandardError; end
 
+      # регулярка для поиска объявлений функций
+      REG = Regexp.new(/^\s*def\s+([a-zA-Z]\w*[!?=]?)\s*([(]?)/)
+
       # Создает массив путей до всех руби файлов находящихся в папке по данному пути
       def Rails.find_paths_to_all_ruby_files_in_folder(path)
         paths = []
@@ -128,14 +131,13 @@ module Dry
         # Удаление всего ненужного(комментарии и строковые константы) из кода
         code_array = delete_comments_and_str_consts_from_ruby_code(code_array)
 
-        # регулярка для поиска объявлений функций
-        reg = Regexp.new(/^\s*def\s+([a-zA-Z]\w*[!?=]?)\s*([(]?)/)
+
 
         # Объекты, хранящие инфу про функцию
         functions_info = []
         code_array.each.with_index do |obj, index|
-          if (obj.match?(reg)) # если было найдено определение функции
-            find = obj.match(reg)
+          if (obj.match?(REG)) # если было найдено определение функции
+            find = obj.match(REG)
             # инфа о найденной функции
             newDef = FunctionDefinition.new(find[1])
             newPos = [file_path, index+1]
