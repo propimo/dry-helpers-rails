@@ -25,7 +25,7 @@ module Dry
 
       # Возращает новую строку, с замененными на пробелы символами по индексам
       def Rails.delete_substr_from_string_by_indexes(str, startOfStr, endOfStr)
-        copyOfStr = str.clone
+        copyOfStr = str.clone # копия строки
         # Ошибка если неправильные границы
         if (startOfStr < 0 || endOfStr < startOfStr || endOfStr > str.length)
           raise "Error: incorrect borders"
@@ -42,6 +42,7 @@ module Dry
         in_str_const = false
         # в какой строковой константе нахожусь
         start_sim_of_str_const = ""
+
         code.each_index do |i| # ОСНОВНОЙ ЦИКЛ ПРОХОДИТ ПОСТРОЧНО КОД
           start_of_str_const = 0 # начало строковой константы
           is_escaped_char = false # текущий символ является экранированым символом
@@ -91,28 +92,19 @@ module Dry
         code
       end
 
-      # Класс, который будет хранить где находится позиция
-      # определения функции и путь к файлу где она объявлена
-      class PositionInFile
-        attr_accessor :file_path, :num_of_str
 
-        def initialize(file_path, num_of_str)
-          @file_path = file_path
-          @num_of_str = num_of_str
-        end
-      end
-
-      # Класс, который хранит инфу про определения функций
+      # Класс, хранящий информацию про найденные функции
       class FunctionDefinition
-        attr_accessor :func_name, :pos_in_file
+        attr_accessor :func_name # имя функции
+        attr_accessor :pos_in_file # позиция в файле(полный путь к файлу, номер строки)
 
         def initialize(name)
           # необходимы для сообщения
           @func_name = name # имя функции
-          @pos_in_file = [] # хранит PositionInFile
+          @pos_in_file = [] # хранит позицию в файле
         end
 
-        # добавление
+        # добавление новой позиции файла
         def addNewPosInFile(pos)
           @pos_in_file.append(pos)
         end
@@ -146,21 +138,10 @@ module Dry
             find = obj.match(reg)
             # инфа о найденной функции
             newDef = FunctionDefinition.new(find[1])
-            newPos = PositionInFile.new(file_path, index+1)
-
-            # поиск была ли уже найдена функция с текущим именем
-            matchEqual = -1
-            functions_info.each.with_index do |func_inf, index_of_func_info|
-              if (func_inf.eql?(newDef))
-                matchEqual = index_of_func_info
-              end
-            end
-            if (matchEqual == -1) # если совпадений не было найдено
-              newDef.addNewPosInFile(newPos)
-              functions_info.append(newDef)
-            else # если было найдено совпадение
-              functions_info[matchEqual].addNewPosInFile(newPos)
-            end
+            newPos = [file_path, index+1]
+            # сохраняю найденную функцию
+            newDef.addNewPosInFile(newPos)
+            functions_info.append(newDef)
           end
         end
         functions_info
@@ -226,8 +207,8 @@ Found function override :
 function name: #{one_of_def.func_name}"
             one_of_def.pos_in_file.each do |pos|
               mes.concat("
-path to file: #{pos.file_path}
-number of string: #{pos.num_of_str}"
+path to file: #{pos[0]}
+number of string: #{pos[1]}"
               )
             end
             error_msgs.append(mes)
