@@ -1,18 +1,18 @@
-require "./lib/dry/helpers/rails/version"
+require_relative "./rails/version"
 
 module Dry
   module Helpers
     module Rails
       class Error < StandardError; end
-      # Your code goes here...
-      # Создание массива путей ко всем ruby файлам в определенной папке
-      def Rails.createPathToRubyFiles(path)
+
+      # Создает массив путей до всех руби файлов находящихся в папке по данному пути
+      def Rails.find_paths_to_all_ruby_files_in_folder(path)
         paths = []
         Dir.each_child(path) do |filename|
           cur_file = path + "\\#{filename}"
           if (Dir.exist?(cur_file)) # если текущий файл папка
             # вызов этой функции для новой директории
-            finded_files = createPathToRubyFiles(cur_file)
+            finded_files = find_paths_to_all_ruby_files_in_folder(cur_file)
             # добавляю все найденные пути
             finded_files.each { |findPath| paths.push(findPath) }
           end
@@ -23,8 +23,8 @@ module Dry
         paths
       end
 
-      # Заменяет подстроку в строке на пробелы (по индексам)
-      def Rails.deleteSubstrFromStrByIndexes(str, startOfStr, endOfStr)
+      # Возращает новую строку, с замененными на пробелы символами по индексам
+      def Rails.delete_substr_from_string_by_indexes(str, startOfStr, endOfStr)
         copyOfStr = str.clone
         # Ошибка если неправильные границы
         if (startOfStr < 0 || endOfStr < startOfStr || endOfStr > str.length)
@@ -36,8 +36,8 @@ module Dry
         copyOfStr
       end
 
-      # Удаляет из кода на Ruby все комментарии и строковые константы
-      def Rails.deleteCommentsAndStrConsts(code)
+      # Заменяет все комментарие и строковые константы в руби коде на пробелы
+      def Rails.delete_comments_and_str_consts_from_ruby_code(code)
         # нахожусь ли в строковой константе
         in_str_const = false
         # в какой строковой константе нахожусь
@@ -56,7 +56,7 @@ module Dry
                   # Ищу конец строковой константы
                   if (code[i][j].eql?(start_sim_of_str_const))
                     in_str_const = false
-                    code[i] = deleteSubstrFromStrByIndexes(code[i], start_of_str_const, j)
+                    code[i] = delete_substr_from_string_by_indexes(code[i], start_of_str_const, j)
                   end
                 end
               end
@@ -68,12 +68,12 @@ module Dry
                   code[index].clear
                   index += 1
                 end
-                code[index] = deleteSubstrFromStrByIndexes(code[index], 0, 3)
+                code[index] = delete_substr_from_string_by_indexes(code[index], 0, 3)
               end
 
               # был встречен однострочный комментарий комментарий
               if (code[i][j] == "#")
-                code[i] = deleteSubstrFromStrByIndexes(code[i], j, code[i].length)
+                code[i] = delete_substr_from_string_by_indexes(code[i], j, code[i].length)
               end
 
               # проверка на начало строковой константы
@@ -85,7 +85,7 @@ module Dry
             end
           end
           if (in_str_const) # Если до сих пор внутри строковой константы
-            code[i] = deleteSubstrFromStrByIndexes(code[i], start_of_str_const, code[i].length)
+            code[i] = delete_substr_from_string_by_indexes(code[i], start_of_str_const, code[i].length)
           end
         end
         code
@@ -123,8 +123,8 @@ module Dry
         end
       end
 
-      # Поиск всех функций и создание массива объявлений функций для одного файла
-      def Rails.create_list_of_def_func(file_path)
+      # Возвращает массив всех объявлений функций в руби файле
+      def Rails.find_all_definitions_of_functions_in_ruby_file(file_path)
         # Массив строк прочитанных из файла
         code_array = []
 
@@ -134,7 +134,7 @@ module Dry
         end
 
         # Удаление всего ненужного(комментарии и строковые константы) из кода
-        code_array = deleteCommentsAndStrConsts(code_array)
+        code_array = delete_comments_and_str_consts_from_ruby_code(code_array)
 
         # регулярка для поиска объявлений функций
         reg = Regexp.new(/^\s*def\s+([a-zA-Z]\w*[!?=]?)\s*([(]?)/)
@@ -166,22 +166,24 @@ module Dry
         functions_info
       end
 
-      # поиск всех объявлений функций во всех руби файлах найденных в одной папке
-      def Rails.findAllDefinitionsOfFunctionsInFolder(dir_path)
+      # находит все объявления функций во всех руби файлах,
+      # которые находятся в папке и подпапках указанного пути
+      # возвращает массив объектов содержащий инфу о функциях
+      def Rails.find_all_definitions_of_ruby_functions_in_folder(dir_path)
         # если папки в helpers в проекте не существует
         unless Dir.exist?(dir_path)
           raise "Dir not exist"
         end
 
         # поиск всех ruby файлов
-        paths = createPathToRubyFiles(dir_path)
+        paths = find_paths_to_all_ruby_files_in_folder(dir_path)
 
         # Создание массива функций
         list_of_def = []
 
         paths.each do |path| # для каждого найденного пути к руби файлу
           # массив определений функций найденных в файле
-          finded_defs_in_file = create_list_of_def_func(path)
+          finded_defs_in_file = find_all_definitions_of_functions_in_ruby_file(path)
 
           # для каждого определения проверяю не находил ли я еще такое же определение раньше
           finded_defs_in_file.each do |one_of_finds|
@@ -205,13 +207,16 @@ module Dry
       end
 
       # Основная функция
+      # находит все повторяющиеся функции в папке helpers,
+      # которая должна находится в папке указанного пути
+      # возвращает массив строк содержащий информацию о повторяющихся методах
       # для текущей задачи(dir = Dir.pwd)
-      def Rails.findEqualDefinitionsOfFunctionsInRubyFiles(dir)
+      def Rails.find_all_equal_definitions_of_ruby_functions_in_helpers(dir)
         # путь, до папки проекта в котором должная находиться папка helpers
         current_path = dir.concat("\\helpers")
 
         # создание массива, который хранит инфу о функциях, найденных в папке
-        list_of_def = findAllDefinitionsOfFunctionsInFolder(current_path)
+        list_of_def = find_all_definitions_of_ruby_functions_in_folder(current_path)
 
         error_msgs = []
         list_of_def.each do |one_of_def|
