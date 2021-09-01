@@ -5,7 +5,7 @@ RSpec.describe Dry::Helpers::Rails do
     # Входные данные
     str = File.dirname(__FILE__ ).concat("/test_helper/test_1")
     # Вызов функции
-    find_func = Dry::Helpers::Rails::findEqualDefinitionsOfFunctionsInRubyFiles(str)
+    find_func = Dry::Helpers::Rails::find_all_equal_definitions_of_ruby_functions_in_helpers(str)
     # Ожидаемые результаты
     expect(find_func).to eq(nil)
   end
@@ -15,7 +15,7 @@ RSpec.describe Dry::Helpers::Rails do
     # Входные данные
     str = File.dirname(__FILE__ ).concat("/test_helper/test_2")
     # Выполнение фунции
-    find_func = Dry::Helpers::Rails::findEqualDefinitionsOfFunctionsInRubyFiles(str)
+    find_func = Dry::Helpers::Rails::find_all_equal_definitions_of_ruby_functions_in_helpers(str)
     # Проверка результатов
     expect(find_func).to eq(nil)
   end
@@ -25,7 +25,7 @@ RSpec.describe Dry::Helpers::Rails do
     # Входные данные
     str = File.dirname(__FILE__ ).concat("/test_helper/test_3")
     # Выполнение функции
-    find_func = Dry::Helpers::Rails::findEqualDefinitionsOfFunctionsInRubyFiles(str)
+    find_func = Dry::Helpers::Rails::find_all_equal_definitions_of_ruby_functions_in_helpers(str)
     # Ожидаемые данные
     expected_res = ["----------------------------------
 Found function override :
@@ -46,7 +46,7 @@ number of string: 4"]
     # Входные данные
     str = File.dirname(__FILE__ ).concat("/test_helper/test_4")
     # Выполнение функции
-    find_func = Dry::Helpers::Rails::findEqualDefinitionsOfFunctionsInRubyFiles(str)
+    find_func = Dry::Helpers::Rails::find_all_equal_definitions_of_ruby_functions_in_helpers(str)
     # Ожидаемые данные
     expected_res = ["----------------------------------
 Found function override :
@@ -68,7 +68,7 @@ number of string: 6"]
     # Входные данные
     str = File.dirname(__FILE__ ).concat("/test_helper/test_5")
     # Выполнение функции
-    find_func = Dry::Helpers::Rails::findEqualDefinitionsOfFunctionsInRubyFiles(str)
+    find_func = Dry::Helpers::Rails::find_all_equal_definitions_of_ruby_functions_in_helpers(str)
     # Ожидаемые данные
     expected_res = ["----------------------------------
 Found function override :
