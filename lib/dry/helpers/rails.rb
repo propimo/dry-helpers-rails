@@ -173,6 +173,7 @@ module Dry
         # массив уникальных функций
         list_of_def = []
         # массив дубликатов функций
+        list_of_duplicates = []
 
         paths.each do |path|
           # для каждого найденного пути к руби файлу
@@ -181,25 +182,22 @@ module Dry
 
           # для каждого определения проверяю не находил ли я еще такое же определение раньше
           finded_defs_in_file.each do |one_of_finds|
-            finded_match = list_of_def.find_index { |one_of_list| one_of_finds.eql?(one_of_list) }
+            # поиск дублей
+            finded_match = list_of_def.find { |one_of_list| one_of_finds.eql?(one_of_list) }
 
-            if (finded_match)
-              one_of_finds.pos_in_file.each do |pos|
-                list_of_def[finded_match].addNewPosInFile(pos)
+            if (finded_match) # если дубль был найден
+              # запоминаю проверка чтобы повторно не запомнить дубль
+              if(finded_match.pos_in_file.length == 1)
+                list_of_duplicates.append(finded_match) # запомнинаю что данная функция дубль
               end
+              # добавляю позицию, где находиться начало объявления метода в запись о методе
+              finded_match.addNewPosInFile(one_of_finds.pos_in_file[0])
             else
               list_of_def.append(one_of_finds)
             end
           end
         end
-        # возвращаю только дубликаты
-        duplicate_of_def = []
-        list_of_def.each do |one_of_def|
-          if (one_of_def.pos_in_file.length > 1)
-            duplicate_of_def.append(one_of_def)
-          end
-        end
-        duplicate_of_def
+        list_of_duplicates
       end
 
       # Основная функция

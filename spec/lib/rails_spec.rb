@@ -72,20 +72,19 @@ number of string: 6"]
     # Ожидаемые данные
     expected_res = ["----------------------------------
 Found function override :
-function name: otherFunc
-path to file: #{File.dirname(__FILE__ )}/test_helper/test_5\\helpers\\firstFile.rb
-number of string: 1
-path to file: #{File.dirname(__FILE__ )}/test_helper/test_5\\helpers\\folder\\rub.rb
-number of string: 1",
-                    "----------------------------------
-Found function override :
 function name: repeatFunc
 path to file: #{File.dirname(__FILE__ )}/test_helper/test_5\\helpers\\firstFile.rb
 number of string: 5
 path to file: #{File.dirname(__FILE__ )}/test_helper/test_5\\helpers\\folder\\otherRub.rb
 number of string: 1
 path to file: #{File.dirname(__FILE__ )}/test_helper/test_5\\helpers\\folder\\rub.rb
-number of string: 5",
+number of string: 5","----------------------------------
+Found function override :
+function name: otherFunc
+path to file: #{File.dirname(__FILE__ )}/test_helper/test_5\\helpers\\firstFile.rb
+number of string: 1
+path to file: #{File.dirname(__FILE__ )}/test_helper/test_5\\helpers\\folder\\rub.rb
+number of string: 1",
                     "----------------------------------
 Found function override :
 function name: abc
