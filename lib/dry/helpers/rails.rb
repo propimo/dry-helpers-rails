@@ -144,8 +144,8 @@ module Dry
         # Объекты, хранящие инфу про функцию
         functions_info = []
         code_array.each.with_index do |obj, index|
-          if (obj.match?(REG)) # если было найдено определение функции
-            find = obj.match(REG)
+          find = obj.match(REG)
+          if (find) # если было найдено определение функции
             # инфа о найденной функции
             newDef = FunctionDefinition.new(find[1])
             newPos = [file_path, index + 1]
