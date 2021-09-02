@@ -179,7 +179,7 @@ module Dry
 
           # для каждого определения проверяю не находил ли я еще такое же определение раньше
           finded_defs_in_file.each do |one_of_finds|
-            finded_match = list_of_def.find { |one_of_list| one_of_finds.eql?(one_of_list) }
+            finded_match = list_of_def.find_index { |one_of_list| one_of_finds.eql?(one_of_list) }
 
             if (finded_match)
               positions = one_of_finds.pos_in_file
