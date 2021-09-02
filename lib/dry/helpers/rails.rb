@@ -179,19 +179,15 @@ module Dry
 
           # для каждого определения проверяю не находил ли я еще такое же определение раньше
           finded_defs_in_file.each do |one_of_finds|
-            finded_match = -1
-            list_of_def.each.with_index do |one_of_list, index|
-              if (one_of_finds.eql?(one_of_list))
-                finded_match = index
-              end
-            end
-            if (finded_match == -1)
-              list_of_def.append(one_of_finds)
-            else
+            finded_match = list_of_def.find { |one_of_list| one_of_finds.eql?(one_of_list) }
+
+            if (finded_match)
               positions = one_of_finds.pos_in_file
               positions.each do |pos|
                 list_of_def[finded_match].addNewPosInFile(pos)
               end
+            else
+              list_of_def.append(one_of_finds)
             end
           end
         end
