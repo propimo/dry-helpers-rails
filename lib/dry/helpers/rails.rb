@@ -46,14 +46,16 @@ module Dry
         # в какой строковой константе нахожусь
         start_sim_of_str_const = ""
 
-        code.each_index do |i| # ОСНОВНОЙ ЦИКЛ ПРОХОДИТ ПОСТРОЧНО КОД
+        code.each_index do |i|
+          # ОСНОВНОЙ ЦИКЛ ПРОХОДИТ ПОСТРОЧНО КОД
           start_of_str_const = 0 # начало строковой константы
           is_escaped_char = false # текущий символ является экранированым символом
           code[i].each_char.with_index do |cur_char, j|
             if (in_str_const) # ЕСЛИ ВНУТРИ СТРОКОВОЙ КОНСТАНТЫ
               if (is_escaped_char) # если текущий символ экранирован
                 is_escaped_char = false
-              else # если текущий символ не экранирован
+              else
+                # если текущий символ не экранирован
                 if (code[i][j].eql?('\\')) # проверяю будет ли след. символ экранированным
                   is_escaped_char = true
                 else
@@ -64,7 +66,8 @@ module Dry
                   end
                 end
               end
-            else # ЕСЛИ НЕ ВНУТРИ СТРОКОВОЙ КОНСТАНТЫ
+            else
+              # ЕСЛИ НЕ ВНУТРИ СТРОКОВОЙ КОНСТАНТЫ
               # проверка на многострочный комментарий
               if (j == 0 && code[i].start_with?("=begin"))
                 index = i
@@ -95,7 +98,6 @@ module Dry
         code
       end
 
-
       # Класс, хранящий информацию про найденные функции
       class FunctionDefinition
         attr_accessor :func_name # имя функции
@@ -118,20 +120,26 @@ module Dry
         end
       end
 
+      # чтение из файла
+      def Rails.read_from_file(file_path)
+        code_from_file = []
+        if (File.exist?(file_path)) # проверка существования файла
+          File.open(file_path) do |review_file|
+            code_from_file.concat(review_file.readlines)
+          end
+        end
+        code_from_file
+      end
+
       # Возвращает массив всех объявлений функций в руби файле
       def Rails.find_all_definitions_of_functions_in_ruby_file(file_path)
         # Массив строк прочитанных из файла
         code_array = []
 
-        # Чтение файла
-        File.open(file_path) do |review_file|
-          code_array.concat(review_file.readlines)
-        end
+        code_array = Rails.read_from_file(file_path)
 
         # Удаление всего ненужного(комментарии и строковые константы) из кода
         code_array = delete_comments_and_str_consts_from_ruby_code(code_array)
-
-
 
         # Объекты, хранящие инфу про функцию
         functions_info = []
@@ -140,7 +148,7 @@ module Dry
             find = obj.match(REG)
             # инфа о найденной функции
             newDef = FunctionDefinition.new(find[1])
-            newPos = [file_path, index+1]
+            newPos = [file_path, index + 1]
             # сохраняю найденную функцию
             newDef.addNewPosInFile(newPos)
             functions_info.append(newDef)
@@ -164,7 +172,8 @@ module Dry
         # Создание массива функций
         list_of_def = []
 
-        paths.each do |path| # для каждого найденного пути к руби файлу
+        paths.each do |path|
+          # для каждого найденного пути к руби файлу
           # массив определений функций найденных в файле
           finded_defs_in_file = find_all_definitions_of_functions_in_ruby_file(path)
 
@@ -216,7 +225,7 @@ number of string: #{pos[1]}"
             error_msgs.append(mes)
           end
         end
-        if(error_msgs.empty?)
+        if (error_msgs.empty?)
           return nil
         else
           return error_msgs
