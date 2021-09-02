@@ -132,6 +132,7 @@ module Dry
       end
 
       # Возвращает массив всех объявлений функций в руби файле
+      # (не производится поиск дупликатов)
       def Rails.find_all_definitions_of_functions_in_ruby_file(file_path)
         # Массив строк прочитанных из файла
         code_array = []
@@ -157,10 +158,10 @@ module Dry
         functions_info
       end
 
-      # находит все объявления функций во всех руби файлах,
+      # находит все дубли функций во всех руби файлах,
       # которые находятся в папке и подпапках указанного пути
       # возвращает массив объектов содержащий инфу о функциях
-      def Rails.find_all_definitions_of_ruby_functions_in_folder(dir_path)
+      def Rails.find_all_duplicates_of_ruby_functions_in_folder(dir_path)
         # если папки в helpers в проекте не существует
         unless Dir.exist?(dir_path)
           raise "Dir not exist"
@@ -169,8 +170,9 @@ module Dry
         # поиск всех ruby файлов
         paths = find_paths_to_all_ruby_files_in_folder(dir_path)
 
-        # Создание массива функций
+        # массив уникальных функций
         list_of_def = []
+        # массив дубликатов функций
 
         paths.each do |path|
           # для каждого найденного пути к руби файлу
@@ -182,8 +184,7 @@ module Dry
             finded_match = list_of_def.find_index { |one_of_list| one_of_finds.eql?(one_of_list) }
 
             if (finded_match)
-              positions = one_of_finds.pos_in_file
-              positions.each do |pos|
+              one_of_finds.pos_in_file.each do |pos|
                 list_of_def[finded_match].addNewPosInFile(pos)
               end
             else
@@ -191,7 +192,14 @@ module Dry
             end
           end
         end
-        list_of_def
+        # возвращаю только дубликаты
+        duplicate_of_def = []
+        list_of_def.each do |one_of_def|
+          if (one_of_def.pos_in_file.length > 1)
+            duplicate_of_def.append(one_of_def)
+          end
+        end
+        duplicate_of_def
       end
 
       # Основная функция
@@ -204,22 +212,20 @@ module Dry
         current_path = dir.concat("\\helpers")
 
         # создание массива, который хранит инфу о функциях, найденных в папке
-        list_of_def = find_all_definitions_of_ruby_functions_in_folder(current_path)
+        list_of_duplicates = find_all_duplicates_of_ruby_functions_in_folder(current_path)
 
         error_msgs = []
-        list_of_def.each do |one_of_def|
-          if (one_of_def.pos_in_file.length > 1)
-            mes = "----------------------------------
+        list_of_duplicates.each do |one_of_def|
+          mes = "----------------------------------
 Found function override :
 function name: #{one_of_def.func_name}"
-            one_of_def.pos_in_file.each do |pos|
-              mes.concat("
+          one_of_def.pos_in_file.each do |pos|
+            mes.concat("
 path to file: #{pos[0]}
 number of string: #{pos[1]}"
-              )
-            end
-            error_msgs.append(mes)
+            )
           end
+          error_msgs.append(mes)
         end
         if (error_msgs.empty?)
           return nil
