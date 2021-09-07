@@ -6,7 +6,7 @@ module Dry
       class Error < StandardError; end
 
       # регулярка для поиска объявлений функций
-      REG = Regexp.new(/^\s*def\s+([a-zA-Z]\w*[!?=]?)\s*([(]?)/)
+      FUNCTION_DEFINITION_REGEX = Regexp.new(/^\s*def\s+([a-zA-Z]\w*[!?=]?)\s*([(]?)/)
 
       # Создает массив путей до всех руби файлов находящихся в папке по данному пути
       def Rails.find_paths_to_all_ruby_files_in_folder(path)
@@ -145,7 +145,7 @@ module Dry
         # Объекты, хранящие инфу про функцию
         functions_info = []
         code_array.each.with_index do |obj, index|
-          find = obj.match(REG)
+          find = obj.match(FUNCTION_DEFINITION_REGEX)
           if (find) # если было найдено определение функции
             # инфа о найденной функции
             newDef = FunctionDefinition.new(find[1])
