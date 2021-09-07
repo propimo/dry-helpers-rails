@@ -131,32 +131,6 @@ module Dry
         code_from_file
       end
 
-      # Возвращает массив всех объявлений функций в руби файле
-      # (не производится поиск дупликатов)
-      def Rails.find_all_definitions_of_functions_in_ruby_file(file_path)
-        # Массив строк прочитанных из файла
-        code_array = []
-
-        code_array = Rails.read_from_file(file_path)
-
-        # Удаление всего ненужного(комментарии и строковые константы) из кода
-        code_array = delete_comments_and_str_consts_from_ruby_code(code_array)
-
-        # Объекты, хранящие инфу про функцию
-        functions_info = []
-        code_array.each.with_index do |obj, index|
-          find = obj.match(FUNCTION_DEFINITION_REGEX)
-          if (find) # если было найдено определение функции
-            # инфа о найденной функции
-            newDef = FunctionDefinition.new(find[1])
-            newPos = [file_path, index + 1]
-            # сохраняю найденную функцию
-            newDef.addNewPosInFile(newPos)
-            functions_info.append(newDef)
-          end
-        end
-        functions_info
-      end
 
       # находит все дубли функций во всех руби файлах,
       # которые находятся в папке и подпапках указанного пути
@@ -177,23 +151,33 @@ module Dry
 
         paths.each do |path|
           # для каждого найденного пути к руби файлу
-          # массив определений функций найденных в файле
-          finded_defs_in_file = find_all_definitions_of_functions_in_ruby_file(path)
+          code_array = []
+          # читаю каждый файл отедльно
+          code_array = Rails.read_from_file(path)
 
-          # для каждого определения проверяю не находил ли я еще такое же определение раньше
-          finded_defs_in_file.each do |one_of_finds|
-            # поиск дублей
-            finded_match = list_of_def.find { |one_of_list| one_of_finds.eql?(one_of_list) }
+          # Удаление всего ненужного(комментарии и строковые константы) из кода
+          code_array = delete_comments_and_str_consts_from_ruby_code(code_array)
 
-            if (finded_match) # если дубль был найден
-              # запоминаю проверка чтобы повторно не запомнить дубль
-              if(finded_match.pos_in_file.length == 1)
-                list_of_duplicates.append(finded_match) # запомнинаю что данная функция дубль
+          code_array.each.with_index do |obj, index|
+            find = obj.match(FUNCTION_DEFINITION_REGEX)
+            if (find) # если было найдено определение функции
+              # инфа о найденной функции
+              newDef = FunctionDefinition.new(find[1])
+              newPos = [path, index + 1]
+              newDef.addNewPosInFile(newPos)
+
+              # Поиск дубля
+              finded_match = list_of_def.find { |one_of_list| newDef.eql?(one_of_list) }
+              if (finded_match) # если дубль был найден
+                # запоминаю проверка чтобы повторно не запомнить дубль
+                if(finded_match.pos_in_file.length == 1)
+                  list_of_duplicates.append(finded_match) # запомнинаю что данная функция дубль
+                end
+                # добавляю позицию, где находиться начало объявления метода в запись о методе
+                finded_match.addNewPosInFile(newPos)
+              else
+                list_of_def.append(newDef)
               end
-              # добавляю позицию, где находиться начало объявления метода в запись о методе
-              finded_match.addNewPosInFile(one_of_finds.pos_in_file[0])
-            else
-              list_of_def.append(one_of_finds)
             end
           end
         end
