@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require Dir.pwd + '/lib/dry/helpers/rails'
+
+
+puts "#{ARGV}"
+unless(ARGV.empty?)
+  if(ARGV[0].eql?("dry_helpers_rails"))
+    p Dry::Helpers::Rails::findEqualDefinitionsOfFunctionsInRubyFiles(Dir.pwd)
+  end
+end
